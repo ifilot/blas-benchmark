@@ -27,7 +27,4 @@
 *.out
 *.app
 
-build/*
-CHGCAR*
-*.png
-src/config.h
+test

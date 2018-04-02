@@ -4,27 +4,31 @@
 #include <vector>
 #include <chrono>
 #include <iostream>
+#include <Eigen/Dense>
 
 double f_rand(double fMin, double fMax) {
     double f = (double)rand() / RAND_MAX;
     return fMin + f * (fMax - fMin);
 }
 
+typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MatrixXXd;
+
 int main(int argv, char* argc[]) {
     int i=0;
 
-    openblas_set_num_threads(4);
+    omp_set_num_threads(4);
+    Eigen::setNbThreads(4);
 
     size_t sz = std::stoi(argc[1]);
 
-    std::vector<double> A(sz * sz);
-    std::vector<double> B(sz * sz);
-    std::vector<double> C(sz * sz);
+    MatrixXXd A = MatrixXXd::Zero(sz, sz);
+    MatrixXXd B = MatrixXXd::Zero(sz, sz);
+    MatrixXXd C = MatrixXXd::Zero(sz, sz);
 
     for(unsigned int i=0; i<sz; i++) {
         for(unsigned int j=0; j<sz; j++) {
-            A[i * sz + j] = f_rand(0, 10);
-            B[i * sz + j] = f_rand(0, 10);
+            A(i,j) = f_rand(0, 10);
+            B(i,j) = f_rand(0, 10);
         }
     }
 
@@ -34,21 +38,7 @@ int main(int argv, char* argc[]) {
 
     auto start = std::chrono::system_clock::now();
 
-    cblas_dgemm(CblasColMajor,
-                CblasNoTrans,
-                CblasTrans,
-                sz,         // m
-                sz,         // n
-                sz,         // k
-                1,          // alpha
-                &A[0],
-                sz,         // leading dimension of A
-                &B[0],
-                sz,         // leading dimensions of B
-                0,          // beta
-                &C[0],
-                sz          // leading dimension of C
-                );
+    C = A * B;
 
     auto end = std::chrono::system_clock::now();
 
