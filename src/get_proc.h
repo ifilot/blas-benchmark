@@ -22,52 +22,27 @@
  *                                                                                  *
  ************************************************************************************/
 
-#include <stdio.h>
-#include <cstdlib>
-#include <vector>
-#include <chrono>
-#include <iostream>
-#include <Eigen/Dense>
-#include <thread>
-#include "f_rand.h"
-#include "get_proc.h"
+#pragma once
 
-typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MatrixXXd;
+#include <hwloc.h>
+#include <exception>
 
-int main(int argv, char* argc[]) {
-    int i=0;
+int get_proc(){
 
-    // allocate number of physical cores
-    int numthreads = get_proc();
-    omp_set_num_threads(numthreads);
-    Eigen::setNbThreads(numthreads);
+    // Allocate, initialize, and perform topology detection
+    hwloc_topology_t topology;
+    hwloc_topology_init(&topology);
+    hwloc_topology_load(topology);
 
-    size_t sz = std::stoi(argc[1]);
-
-    MatrixXXd A = MatrixXXd::Zero(sz, sz);
-    MatrixXXd B = MatrixXXd::Zero(sz, sz);
-    MatrixXXd C = MatrixXXd::Zero(sz, sz);
-
-    for(unsigned int i=0; i<sz; i++) {
-        for(unsigned int j=0; j<sz; j++) {
-            A(i,j) = f_rand(0, 10);
-            B(i,j) = f_rand(0, 10);
-        }
+    // Try to get the number of CPU cores from topology
+    int depth = hwloc_get_type_depth(topology, HWLOC_OBJ_CORE);
+    if(depth == HWLOC_TYPE_DEPTH_UNKNOWN) {
+        throw std::runtime_error("Cannot establish number of cores");
     }
 
-    // A: m rows by k columns
-    // B: k rows by n columns
-    // C: m rows by n columns
+    int ncores = hwloc_get_nbobjs_by_depth(topology, depth);
 
-    auto start = std::chrono::system_clock::now();
-
-    C = A * B;
-
-    auto end = std::chrono::system_clock::now();
-
-    std::chrono::duration<double> elapsed_seconds = end-start;
-
-    std::cout << elapsed_seconds.count() << " seconds passed using " << numthreads << " threads." << std::endl;
-
-    return 0;
+    // Destroy topology object and return
+    hwloc_topology_destroy(topology);
+    return ncores;
 }

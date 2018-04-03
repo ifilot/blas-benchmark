@@ -22,52 +22,9 @@
  *                                                                                  *
  ************************************************************************************/
 
-#include <stdio.h>
-#include <cstdlib>
-#include <vector>
-#include <chrono>
-#include <iostream>
-#include <Eigen/Dense>
-#include <thread>
-#include "f_rand.h"
-#include "get_proc.h"
+#pragma once
 
-typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MatrixXXd;
-
-int main(int argv, char* argc[]) {
-    int i=0;
-
-    // allocate number of physical cores
-    int numthreads = get_proc();
-    omp_set_num_threads(numthreads);
-    Eigen::setNbThreads(numthreads);
-
-    size_t sz = std::stoi(argc[1]);
-
-    MatrixXXd A = MatrixXXd::Zero(sz, sz);
-    MatrixXXd B = MatrixXXd::Zero(sz, sz);
-    MatrixXXd C = MatrixXXd::Zero(sz, sz);
-
-    for(unsigned int i=0; i<sz; i++) {
-        for(unsigned int j=0; j<sz; j++) {
-            A(i,j) = f_rand(0, 10);
-            B(i,j) = f_rand(0, 10);
-        }
-    }
-
-    // A: m rows by k columns
-    // B: k rows by n columns
-    // C: m rows by n columns
-
-    auto start = std::chrono::system_clock::now();
-
-    C = A * B;
-
-    auto end = std::chrono::system_clock::now();
-
-    std::chrono::duration<double> elapsed_seconds = end-start;
-
-    std::cout << elapsed_seconds.count() << " seconds passed using " << numthreads << " threads." << std::endl;
-
-    return 0;
+double f_rand(double fMin, double fMax) {
+    double f = (double)rand() / RAND_MAX;
+    return fMin + f * (fMax - fMin);
 }
