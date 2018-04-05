@@ -61,7 +61,7 @@ int main(int argv, char* argc[]) {
 
     auto start = std::chrono::system_clock::now();
 
-    C = A * B;
+    C.noalias() = A * B;
 
     auto end = std::chrono::system_clock::now();
 
