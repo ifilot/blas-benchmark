@@ -22,7 +22,7 @@
  *                                                                                  *
  ************************************************************************************/
 
-#include <cblas.h>
+#include <openblas/cblas.h>
 #include <stdio.h>
 #include <cstdlib>
 #include <vector>

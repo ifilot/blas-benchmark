@@ -5,7 +5,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/openblas/lib
 
 # test openblas
 echo 'Testing OpenBLAS compilation'
-g++ -I /opt/openblas/include/ -L /opt/openblas/lib -lopenblas -lpthread -lhwloc -fopenmp src/openblas.cpp -o test -O3 -DNDEBUG -march=native
+g++ -lopenblas -lpthread -lhwloc -fopenmp src/openblas.cpp -o test -O3 -DNDEBUG -march=native
 echo -ne '512\t'
 ./test 512
 echo -ne '1024\t'
